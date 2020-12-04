@@ -8,21 +8,23 @@ import java.util.Date;
 public class News {
 
 	public String domeniu;
+	public String titlu;
 	public String src;
 	public String data;
 	public String body;
 	public static final DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");  
 	
 	public String toString(){
-		return domeniu + "|" + src + "|" + data + "|" + body;
+		return domeniu + "|" + src + "|" + data + "|" + titlu + "|" + body;
 	}
 	
 	private News() {}
 	
-	public News(String domeniu, String src, Date data, String body) {
+	public News(String domeniu, String src, Date data, String titlu, String body) {
 		this.domeniu = domeniu;
 		this.src = src;
 		this.data = dateFormat.format(data);
+		this.titlu = titlu;
 		this.body = body;
 	}
 	
@@ -40,6 +42,9 @@ public class News {
 		retVal.data = src.substring(0, src.indexOf('|'));
 		src = src.substring(src.indexOf('|')+1);
 		
+		retVal.titlu = src.substring(0, src.indexOf('|'));
+		src = src.substring(src.indexOf('|')+1);
+		
 		//System.out.print(src);
 		retVal.body = src;
 		
@@ -52,6 +57,7 @@ public class News {
 			return  domeniu.equals(n.domeniu) &&
 					src.equals(n.src) &&
 					data.equals(n.data) &&
+					titlu.equals(n.titlu) &&
 					body.equals(n.body);
 					
 		}

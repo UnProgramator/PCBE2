@@ -20,6 +20,7 @@ class NewsTestCase {
 				"Test Domeniu",
 				"Test Source",
 				crtDate,
+				"Test Titlu",
 				"Test Body"
 				);
 	}
@@ -28,14 +29,16 @@ class NewsTestCase {
 	public void testToString() {
 		String actual = "Test Domeniu" + "|" +
 						"Test Source" + "|" + 
-						News.dateFormat.format(crtDate)+ "|" + "Test Body";
+						News.dateFormat.format(crtDate) + "|" +
+						"Test Titlu" + "|" +
+						"Test Body";
 		Assertions.assertEquals(testObj.toString(), actual);
 	}
 	
 	@Test
 	public void testFromString() throws ParseException {
 		String strFormat = testObj.toString();
-		Assertions.assertEquals(News.fromString(strFormat), testObj);
+		Assertions.assertEquals(testObj, News.fromString(strFormat));
 
 	}
 
