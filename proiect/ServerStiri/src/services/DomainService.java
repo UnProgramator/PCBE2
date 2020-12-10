@@ -36,4 +36,12 @@ public class DomainService {
 		else
 			return null;
 	}
+	
+	public ArrayList<String> getDomains(){
+		return new ArrayList<String>(subDomains.keySet());
+	}
+	
+	public ArrayList<String> getSubdomains(){
+		return new ArrayList<String>(parentDomain.keySet());
+	}
 }

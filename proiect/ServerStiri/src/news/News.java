@@ -20,7 +20,7 @@ public class News {
 	
 	private News() {}
 	
-	public News(String domeniu, String src, Date data, String titlu, String body) {
+	public News(String domeniu, String src, Date data, String titlu, String body) { 
 		this.domeniu = domeniu;
 		this.src = src;
 		this.data = dateFormat.format(data);
