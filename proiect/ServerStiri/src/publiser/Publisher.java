@@ -45,7 +45,6 @@ public class Publisher extends Thread{
 		try {
 	        String routing_key = getPublishRoutingKey(news.domeniu);
 	        channel.basicPublish(PublisherName, routing_key, null, news.toString().getBytes("UTF-8"));
-		    
 		}
 		catch(Exception e) {
 			e.printStackTrace();
