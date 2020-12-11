@@ -1,8 +1,9 @@
 package publiser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-
+import java.util.concurrent.TimeoutException;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -15,11 +16,23 @@ public class Publisher extends Thread{
 	private String PublisherName;
 	DomainService ds;
 	int nr=0;
+	private Connection connection;
+	private Channel channel;
 	
 	
-	public Publisher(String PublisherName, DomainService ds) {
+	public Publisher(String PublisherName, DomainService ds) throws IOException, TimeoutException {
 		this.PublisherName=PublisherName;
 		this.ds = ds;
+		
+		ConnectionFactory factory = new ConnectionFactory();
+	    factory.setHost("localhost");
+	    
+	    connection = factory.newConnection();
+	    
+	    channel = connection.createChannel();
+	    channel.exchangeDeclare(PublisherName, "topic");
+	    
+	    /*Aici apeleaza functia pentru subscribe la serviciul de "nr stiri citite" pe canalul deja deschis*/
 	}
 	
 	public void run() {
@@ -28,20 +41,10 @@ public class Publisher extends Thread{
 		}
 	}
 	
-	void publish(News news) {
+	private void publish(News news) {
 		try {
-			ConnectionFactory factory = new ConnectionFactory();
-		    factory.setHost("localhost");
-		    
-		    Connection connection = factory.newConnection();
-	        Channel channel = connection.createChannel();
-	        
 	        String routing_key = getPublishRoutingKey(news.domeniu);
-	        String exchangeName = "x";
-	        
-	        channel.exchangeDeclare(exchangeName, "topic");
-	        
-	        channel.basicPublish(exchangeName, routing_key, null, news.toString().getBytes("UTF-8"));
+	        channel.basicPublish(PublisherName, routing_key, null, news.toString().getBytes("UTF-8"));
 		    
 		}
 		catch(Exception e) {

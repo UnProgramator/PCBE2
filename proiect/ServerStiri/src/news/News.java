@@ -28,6 +28,10 @@ public class News {
 		this.body = body;
 	}
 	
+	public String getHead() {
+		return domeniu;
+	}
+	
 	public static News fromString(String src) {
 		News retVal = new News();
 		//System.out.print(src);
