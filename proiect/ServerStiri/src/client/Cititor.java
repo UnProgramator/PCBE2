@@ -5,10 +5,12 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
+import news.News;
+
 public class Cititor extends Thread{
 	private static final String EXCHANGE_NAME = "topic_logs";
 	private static final String EXCHANGE_NAME_S = "topic_s";
-	private static final String ans="";
+	private static String ans="";
 	private String topics[];
 
 	public Cititor(String[] topics){
@@ -40,7 +42,12 @@ public class Cititor extends Thread{
 		        
 		        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 		            String message = new String(delivery.getBody(), "UTF-8");
-		            String routingKey=delivery.getEnvelope().getRoutingKey();
+		            
+		            News n = News.fromString(message);
+		            ans = n.getHead();
+		            String routingKey = "raspuns-" + n.src;
+		            
+		            channel.exchangeDeclare(EXCHANGE_NAME_S, "direct");
 		            channel.basicPublish(EXCHANGE_NAME_S, routingKey, null, ans.getBytes("UTF-8"));
 		            System.out.println(" [x] Cititorul "+ cititor+" Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
 		        };
