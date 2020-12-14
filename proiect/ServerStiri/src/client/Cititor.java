@@ -4,7 +4,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-
 import news.News;
 import services.DomainService;
 
@@ -14,16 +13,20 @@ public class Cititor{
 	private static String ans="";
 	private final DomainService ds;
 	private String topics[];
-	private static int i=0;
+	private static int contor=1;
+	private int cititor;
 
-	public Cititor(String[] topics,DomainService ds) throws Exception{
+	public Cititor(String[] topics, DomainService ds) throws Exception{
+		cititor=contor;
+		contor++;
 		this.topics=topics;
 		this.ds=ds;
 		init();
+
 	}
 
 
-	public void init() throws Exception {
+	private void init() throws Exception {
 		  try {
 			ConnectionFactory factory = new ConnectionFactory();
 		      	factory.setHost("localhost");
@@ -32,23 +35,31 @@ public class Cititor{
 		        channel.exchangeDeclare(EXCHANGE_NAME, "topic");
 		        String queueName = channel.queueDeclare().getQueue();
 		        channel.exchangeDeclare(EXCHANGE_NAME_S, "direct");
-		        String cititor=""+i;
-		        i++;
-		        
-		        if (topics.length < 1) {
+        if (topics.length < 1) {
 		            System.err.println("Usage: ReceiveLogsTopic [binding_key]...");
 		            System.exit(1);
 		        }
-		        
-		        channel.queueBind(queueName, EXCHANGE_NAME, "*.IT.*");
-		        
-				/*
-				 * for (String bindingKey : topics) { channel.queueBind(queueName,
-				 * EXCHANGE_NAME, "*.*.*"); }
-				 */
-
-		        //System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
-		        
+	      		      		        
+				
+			 for (String topic : topics) {
+				 StringBuilder bindingKey= new StringBuilder("");
+				 int pozDel=topic.indexOf("%");
+				 if(pozDel<0) 
+					 bindingKey.append("*."+domeniu_all(topic));
+				 else
+					 if(pozDel==0)
+						 bindingKey.append(topic.substring(1)+".#");	 
+					 else
+					 {
+						 bindingKey.append(topic.substring(pozDel+1));
+						 bindingKey.append('.');
+						 bindingKey.append(domeniu_all(topic.substring(0,pozDel)));
+							 
+				 }
+				channel.queueBind(queueName,EXCHANGE_NAME, bindingKey.toString() ); 
+				//System.out.println("-!- "+bindingKey );
+				}
+			
 		        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 		        	try {
 		            String message = new String(delivery.getBody(), "UTF-8");
@@ -71,8 +82,13 @@ public class Cititor{
 			  e.printStackTrace();
 		  }
 		  }
-	  
-	  public void run() {
+	
+	private String domeniu_all(String topic) {
+		if(ds.getParent(topic)==null) return topic+".*";
+		return "*."+topic;
+	}
+	
+	public void run() {
 		  try {
 			init();
 		
@@ -82,7 +98,6 @@ public class Cititor{
 		}
 	  }  
 		  
-	    
-		  
+	  
 	  
 }
