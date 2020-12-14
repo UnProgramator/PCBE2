@@ -6,15 +6,19 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
 import news.News;
+import services.DomainService;
 
-public class Cititor extends Thread{
+public class Cititor{
 	private static final String EXCHANGE_NAME = "topic_logs";
 	private static final String EXCHANGE_NAME_S = "topic_s";
 	private static String ans="";
+	private final DomainService ds;
 	private String topics[];
 
-	public Cititor(String[] topics){
+	public Cititor(String[] topics,DomainService ds) throws Exception{
 		this.topics=topics;
+		this.ds=ds;
+		init();
 	}
 
 
@@ -26,30 +30,38 @@ public class Cititor extends Thread{
 		        Channel channel = connection.createChannel();
 		        channel.exchangeDeclare(EXCHANGE_NAME, "topic");
 		        String queueName = channel.queueDeclare().getQueue();
-
+		        channel.exchangeDeclare(EXCHANGE_NAME_S, "direct");
 		        String cititor=joinStrings(topics, ".", 0);
 		        
 		        if (topics.length < 1) {
 		            System.err.println("Usage: ReceiveLogsTopic [binding_key]...");
 		            System.exit(1);
 		        }
-
-		        for (String bindingKey : topics) {
-		            channel.queueBind(queueName, EXCHANGE_NAME, bindingKey);
-		        }
+		        
+		        channel.queueBind(queueName, EXCHANGE_NAME, "IEEE.IT.PAD");
+		        
+				/*
+				 * for (String bindingKey : topics) { channel.queueBind(queueName,
+				 * EXCHANGE_NAME, "*.*.*"); }
+				 */
 
 		        //System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 		        
 		        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+		        	try {
 		            String message = new String(delivery.getBody(), "UTF-8");
+		            System.out.println(" [x] Cititorul "+ cititor+" Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
 		            
 		            News n = News.fromString(message);
 		            ans = n.getHead();
 		            String routingKey = "raspuns-" + n.src;
 		            
-		            channel.exchangeDeclare(EXCHANGE_NAME_S, "direct");
 		            channel.basicPublish(EXCHANGE_NAME_S, routingKey, null, ans.getBytes("UTF-8"));
-		            System.out.println(" [x] Cititorul "+ cititor+" Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
+		            
+		        	}
+		        	catch(Exception e) {
+		        		e.printStackTrace();
+		        	}
 		        };
 		        channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
 		  }

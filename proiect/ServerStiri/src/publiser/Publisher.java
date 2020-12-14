@@ -21,6 +21,7 @@ public class Publisher extends Thread{
 	private Connection connection;
 	private Channel channel;
 	private static final String EXCHANGE_NAME_S = "topic_s";
+	private static final String EXCHANGE_NAME = "topic_logs";
 	private volatile HashMap<String, Integer> nrCititori;
 	
 	
@@ -35,7 +36,7 @@ public class Publisher extends Thread{
 	    connection = factory.newConnection();
 	    
 	    channel = connection.createChannel();
-	    channel.exchangeDeclare(PublisherName, "topic");
+	    channel.exchangeDeclare(EXCHANGE_NAME, "topic");
 	    
 	    /*Aici apeleaza functia pentru subscribe la serviciul de "nr stiri citite" pe canalul deja deschis*/
 	    nrStiriCitite(channel);
@@ -50,7 +51,8 @@ public class Publisher extends Thread{
 	private void publish(News news) {
 		try {
 	        String routing_key = getPublishRoutingKey(news.domeniu);
-	        channel.basicPublish(PublisherName, routing_key, null, news.toString().getBytes("UTF-8"));
+	        channel.basicPublish(EXCHANGE_NAME, routing_key, null, news.toString().getBytes("UTF-8"));
+	        System.out.println("published to " + routing_key + " msg: " + news);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -94,26 +96,28 @@ public class Publisher extends Thread{
 	
 	private void nrStiriCitite(Channel channel)
 	{
-		try {
-			channel.exchangeDeclare(EXCHANGE_NAME_S, "direct");
-	        String queueName = channel.queueDeclare().getQueue();
-	        channel.queueBind(queueName, EXCHANGE_NAME_S, "raspuns-"+PublisherName);
-	        
-	        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-	            String domeniu_receive = new String(delivery.getBody(), "UTF-8");
-	            if(nrCititori.containsKey(domeniu_receive))
-	            {
-	            	int val = nrCititori.get(domeniu_receive);
-	            	nrCititori.put(domeniu_receive, val+1);
-	            }
-	            else
-	            	nrCititori.put(domeniu_receive, 1);
-	        };
-	        
-	        channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
-		} catch(Exception e)
-		{
-			e.printStackTrace();
+		synchronized(nrCititori){
+			try {
+				channel.exchangeDeclare(EXCHANGE_NAME_S, "direct");
+		        String queueName = channel.queueDeclare().getQueue();
+		        channel.queueBind(queueName, EXCHANGE_NAME_S, "raspuns-"+PublisherName);
+		        
+		        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+		            String domeniu_receive = new String(delivery.getBody(), "UTF-8");
+		            if(nrCititori.containsKey(domeniu_receive))
+		            {
+		            	int val = nrCititori.get(domeniu_receive);
+		            	nrCititori.put(domeniu_receive, val+1);
+		            }
+		            else
+		            	nrCititori.put(domeniu_receive, 1);
+		        };
+		        
+		        channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
+			} catch(Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 	
