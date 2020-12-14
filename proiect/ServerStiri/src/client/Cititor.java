@@ -14,6 +14,7 @@ public class Cititor{
 	private static String ans="";
 	private final DomainService ds;
 	private String topics[];
+	private static int i=0;
 
 	public Cititor(String[] topics,DomainService ds) throws Exception{
 		this.topics=topics;
@@ -31,14 +32,15 @@ public class Cititor{
 		        channel.exchangeDeclare(EXCHANGE_NAME, "topic");
 		        String queueName = channel.queueDeclare().getQueue();
 		        channel.exchangeDeclare(EXCHANGE_NAME_S, "direct");
-		        String cititor=joinStrings(topics, ".", 0);
+		        String cititor=""+i;
+		        i++;
 		        
 		        if (topics.length < 1) {
 		            System.err.println("Usage: ReceiveLogsTopic [binding_key]...");
 		            System.exit(1);
 		        }
 		        
-		        channel.queueBind(queueName, EXCHANGE_NAME, "IEEE.IT.PAD");
+		        channel.queueBind(queueName, EXCHANGE_NAME, "*.IT.*");
 		        
 				/*
 				 * for (String bindingKey : topics) { channel.queueBind(queueName,
@@ -79,17 +81,6 @@ public class Cititor{
 			e.printStackTrace();
 		}
 	  }  
-		  
-	  private String joinStrings(String[] strings, String delimiter, int startIndex) {
-			    int length = strings.length;
-			    if (length == 0) return "";
-			    if (length < startIndex) return "";
-			    StringBuilder words = new StringBuilder(strings[startIndex]);
-			    for (int i = startIndex + 1; i < length; i++) {
-			        words.append(delimiter).append(strings[i]);
-			    }
-			    return words.toString();
-			}  
 		  
 	    
 		  

@@ -43,7 +43,7 @@ public class Publisher extends Thread{
 	}
 	
 	public void run() {
-		for(int i=0; i< 10; i++) {
+		for(int i=0; i< 5; i++) {
 			this.publish(genNews());
 		}
 	}
@@ -111,6 +111,7 @@ public class Publisher extends Thread{
 		            }
 		            else
 		            	nrCititori.put(domeniu_receive, 1);
+		            System.out.println(PublisherName + nrCititori);
 		        };
 		        
 		        channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });

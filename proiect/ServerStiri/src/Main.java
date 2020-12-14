@@ -21,24 +21,24 @@ public class Main {
 		});
 		
 		
-		Cititor c1 = new Cititor(new String[] {"IT"}, ds);
+		Cititor c1 = new Cititor(new String[] {"IT%Minea SA"}, ds);
 		Cititor c2 = new Cititor(new String[] {"IT", "Fotbal"}, ds);
-		Cititor c3 = new Cititor(new String[] {"Biologie", "Celuloza", "Economie"}, ds);
+//		Cititor c3 = new Cititor(new String[] {"Biologie", "Celuloza", "Economie"}, ds);
 
 		
 		Publisher p = new Publisher("IEEE", ds);
-//		Publisher p1 = new Publisher("Minea SA", ds);
-//		Publisher p2 = new Publisher("Poli", ds);
+		Publisher p1 = new Publisher("Minea SA", ds);
+		Publisher p2 = new Publisher("Poli", ds);
 		
 		p.start();
-//		p1.start();
-//		p2.start();
+		p1.start();
+		p2.start();
 		
 		
 		
 		p.join();
-//		p1.join();
-//		p2.join();
+		p1.join();
+		p2.join();
 	}
 
 }
