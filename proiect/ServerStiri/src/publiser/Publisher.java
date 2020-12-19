@@ -26,6 +26,17 @@ public class Publisher extends Thread{
 	private volatile HashMap<String, Integer> nrCititori;
 	private ArrayList<News> publishedNews = new ArrayList<News>();
 	
+	public void finalize() {
+		try {
+			channel.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	public Publisher(String PublisherName, DomainService ds) throws IOException, TimeoutException {
 		this.PublisherName=PublisherName;
@@ -54,8 +65,14 @@ public class Publisher extends Thread{
 			else
 				this.publish(genNews());
 			
+			if(publishedNews.size() > 0 && (Math.random()>0.15 || i>7)) {
+				News toBeDeletedEliminatedEradicated = publishedNews.get((int)(Math.random()*publishedNews.size()));
+				System.out.println("removed \'" + toBeDeletedEliminatedEradicated + "\'");
+				this.sterge_ma(toBeDeletedEliminatedEradicated); //aici facem strergeri XD
+			}
+			
 			try {
-				this.sleep(1000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -72,6 +89,11 @@ public class Publisher extends Thread{
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void sterge_ma(News news) {
+		int pos = publishedNews.indexOf(news);
+		publishedNews.remove(pos);
 	}
 	
 	private String getPublishRoutingKey(String sourceDeclaredDomain) {

@@ -1,5 +1,8 @@
 package client;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -15,6 +18,7 @@ public class Cititor{
 	private String topics[];
 	private static int contor=1;
 	private int cititor;
+	private Channel channel;
 
 	public Cititor(String[] topics, DomainService ds) throws Exception{
 		cititor=contor;
@@ -31,7 +35,7 @@ public class Cititor{
 			ConnectionFactory factory = new ConnectionFactory();
 		      	factory.setHost("localhost");
 		        Connection connection = factory.newConnection();
-		        Channel channel = connection.createChannel();
+		        channel = connection.createChannel();
 		        channel.exchangeDeclare(EXCHANGE_NAME, "topic");
 		        String queueName = channel.queueDeclare().getQueue();
 		        channel.exchangeDeclare(EXCHANGE_NAME_S, "direct");
@@ -104,6 +108,16 @@ public class Cititor{
 		}
 	  }  
 		  
-	  
+	public void finalize() {
+		try {
+			channel.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	  
 }
