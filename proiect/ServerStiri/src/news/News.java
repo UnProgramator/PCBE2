@@ -10,12 +10,13 @@ public class News {
 	public String domeniu;
 	public String titlu;
 	public String src;
-	public String data;
+	public String publishData;
+	public String lastChangedData;
 	public String body;
 	public static final DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");  
 	
 	public String toString(){
-		return domeniu + "|" + src + "|" + data + "|" + titlu + "|" + body;
+		return domeniu + "|" + src + "|" + publishData + "|" + lastChangedData + "|" + titlu + "|" + body;
 	}
 	
 	private News() {}
@@ -23,9 +24,14 @@ public class News {
 	public News(String domeniu, String src, Date data, String titlu, String body) { 
 		this.domeniu = domeniu;
 		this.src = src;
-		this.data = dateFormat.format(data);
+		this.lastChangedData = this.publishData = dateFormat.format(data);
 		this.titlu = titlu;
 		this.body = body;
+	}
+	
+	public void changeContent(String newContent, Date newDate) {
+		this.body = newContent;
+		this.lastChangedData = dateFormat.format(newDate);
 	}
 	
 	public String getHead() {
@@ -43,7 +49,10 @@ public class News {
 		src = src.substring(src.indexOf('|')+1);
 		
 		//System.out.print(src);
-		retVal.data = src.substring(0, src.indexOf('|'));
+		retVal.publishData = src.substring(0, src.indexOf('|'));
+		src = src.substring(src.indexOf('|')+1);
+		
+		retVal.lastChangedData = src.substring(0, src.indexOf('|'));
 		src = src.substring(src.indexOf('|')+1);
 		
 		retVal.titlu = src.substring(0, src.indexOf('|'));
@@ -60,7 +69,8 @@ public class News {
 			News n = (News)o;
 			return  domeniu.equals(n.domeniu) &&
 					src.equals(n.src) &&
-					data.equals(n.data) &&
+					publishData.equals(n.publishData) &&
+					lastChangedData.equals(n.lastChangedData) &&
 					titlu.equals(n.titlu) &&
 					body.equals(n.body);
 					

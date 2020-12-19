@@ -1,6 +1,7 @@
 package publiser;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ public class Publisher extends Thread{
 	private static final String EXCHANGE_NAME_S = "topic_s";
 	private static final String EXCHANGE_NAME = "topic_logs";
 	private volatile HashMap<String, Integer> nrCititori;
+	private ArrayList<News> publishedNews = new ArrayList<News>();
 	
 	
 	public Publisher(String PublisherName, DomainService ds) throws IOException, TimeoutException {
@@ -43,8 +45,21 @@ public class Publisher extends Thread{
 	}
 	
 	public void run() {
-		for(int i=0; i< 5; i++) {
-			this.publish(genNews());
+		for(int i=0; i< 10; i++) {
+			
+			if(publishedNews.size()>2 && Math.random()<0.5) {
+				News n = publishedNews.get((int)(Math.random()*publishedNews.size()));
+				this.modifyStire(n);
+			}
+			else
+				this.publish(genNews());
+			
+			try {
+				this.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -85,13 +100,32 @@ public class Publisher extends Thread{
 		body = "Body - " + domeniu + nr + " from " + PublisherName;
 				nr++;
 		
-		return new News(
+		News retVal = new News(
 				domeniu,
 				PublisherName,
 				new Date(),
 				titlu,
 				body
 				);
+				
+		publishedNews.add(retVal);
+				
+		return retVal;
+	}
+	
+	private void modifyStire(News news) {
+		news.changeContent(news.body + "modify", new Date());
+		String routing_key = getPublishRoutingKey(news.domeniu);
+        try {
+			channel.basicPublish(EXCHANGE_NAME, routing_key, null, news.toString().getBytes("UTF-8"));
+			System.out.println("modified to " + routing_key + " msg: " + news);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void nrStiriCitite(Channel channel)

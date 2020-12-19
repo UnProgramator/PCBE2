@@ -62,15 +62,21 @@ public class Cititor{
 			
 		        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 		        	try {
-		            String message = new String(delivery.getBody(), "UTF-8");
-		            System.out.println(" [x] Cititorul "+ cititor+" Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
-		            
-		            News n = News.fromString(message);
-		            ans = n.getHead();
-		            String routingKey = "raspuns-" + n.src;
-		            
-		            channel.basicPublish(EXCHANGE_NAME_S, routingKey, null, ans.getBytes("UTF-8"));
-		            
+			            String message = new String(delivery.getBody(), "UTF-8");
+			            News n = News.fromString(message);
+			            
+			            if(n.lastChangedData.equals(n.publishData)) {
+			            	System.out.println(" [x] Cititorul "+ cititor+" Received '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
+			            	
+				            ans = n.getHead();
+				            String routingKey = "raspuns-" + n.src;
+				            
+				            channel.basicPublish(EXCHANGE_NAME_S, routingKey, null, ans.getBytes("UTF-8"));
+			            }
+			            else {
+			            	System.out.println(" [x] Cititorul "+ cititor+" Receivedthe modified message '" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
+			            }
+			            
 		        	}
 		        	catch(Exception e) {
 		        		e.printStackTrace();
